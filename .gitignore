@@ -131,3 +131,5 @@ dist
 
 context/
 *.zip
+
+.DS_Store

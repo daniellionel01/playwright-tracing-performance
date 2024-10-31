@@ -2,7 +2,7 @@ import { $ } from "bun";
 import { chromium } from "playwright";
 
 // ===============================================================================================================
-// This file generates a long playwright trace by visiting wikipedia and clicking through links for 10 minutes.
+// This file generates a long playwright trace by visiting random youtube videos for a fixed duration.
 // This will generate a pretty sizable session zip file that demonstrates that the performance of such large
 // files in the official playwright trace viewer (https://trace.playwright.dev)
 // ===============================================================================================================
@@ -10,7 +10,13 @@ import { chromium } from "playwright";
 await $`mkdir -p ./context`;
 const browser = await chromium.launchPersistentContext(
   "./context/performance",
-  { headless: false },
+  {
+    headless: false,
+    viewport: {
+      width: 1920,
+      height: 1080,
+    },
+  },
 );
 
 const page = await browser.newPage();
@@ -19,21 +25,33 @@ await browser.tracing.start({
   name: "tracing-performance",
   screenshots: true,
   snapshots: true,
-  sources: true,
 });
 
+await page.goto("https://www.youtube.com/watch?v=swXWUfufu2w");
+
 const MIN_MS = 1000 * 60;
-const DURATION = 10 * MIN_MS;
+const DURATION = 15 * MIN_MS;
 const start = Date.now();
 while (true) {
   const diff = Date.now() - start;
   console.log(`Time left: ${formatTime(DURATION - diff)} (mm:ss)`);
   if (diff >= DURATION) break;
 
-  await page.goto("https://en.wikipedia.org/wiki/Special:Random");
   await page.waitForLoadState();
 
-  await Bun.sleep(1000);
+  // => noise to fill up the trace file with data
+  await page.waitForSelector("#above-the-fold #description");
+  await page.click("#above-the-fold #description");
+
+  // => load some comments
+  for (let i = 0; i < 5; i++) {
+    await page.evaluate(() => window.scrollBy(0, 500));
+    await Bun.sleep(1000);
+  }
+  await page.evaluate(() => window.scrollTo(0, 0));
+
+  // => play the next video
+  await page.click("#items a#thumbnail:not([href*='shorts'])");
 }
 
 await browser.tracing.stop({ path: "./SESSION.zip" });
