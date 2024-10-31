@@ -23,7 +23,7 @@ await browser.tracing.start({
 });
 
 const MIN_MS = 1000 * 60;
-const DURATION = 1.5 * MIN_MS;
+const DURATION = 10 * MIN_MS;
 const start = Date.now();
 while (true) {
   const diff = Date.now() - start;
