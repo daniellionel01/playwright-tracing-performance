@@ -5,5 +5,6 @@ This is a repository serves to reproduce an issue with very large trace files th
 ---
 
 - Install dependencies: `bun install`
-- Generate trace file: `bun run src/session.ts`
-- Open trace file in trace viewer: `bun run src/view.ts`
+- Install chromium: `bunx playwright install`
+- Generate trace file: `bun run session.ts`
+- Open trace file in trace viewer: `bunx playwright show-trace SESSION.zip`
